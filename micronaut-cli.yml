@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: com.alejua
+testFramework: junit
+sourceLanguage: java
+buildTool: gradle
+features: [annotation-api, app-name, data, data-jpa, gradle, hibernate-jpa, http-client, java, java-application, jdbc-hikari, junit, log4j2, netty-server, postgres, readme, redis-lettuce, rxjava3, shade, testcontainers, vertx-pg-client, yaml]
