@@ -22,13 +22,14 @@ public class SaludoService {
 	@Inject
 	UserRepository userRepository;
 	
-	public String getSaludo(String name) {
+	public SaludoDTO getSaludo(String name) {
 		logger.info("SaludoService::getSaludo");
 		if (name == null) name = "";
-		return "Hola " + name.toUpperCase();
+		return new SaludoDTO("Hola " + name.toUpperCase());
 	}
 	
 	public String getObjetos() throws InterruptedException, ExecutionException {
+		logger.info("SaludoService::getObjetos");
 		return redisConnection.async().get("objetos").get();
 	}
 	

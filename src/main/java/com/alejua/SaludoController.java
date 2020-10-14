@@ -1,7 +1,9 @@
 package com.alejua;
 
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
@@ -21,13 +23,13 @@ public class SaludoController {
 	SaludoService saludoService;
 	
 	@Get("/saludo")
-	public String getSaludo() {
+	public SaludoDTO getSaludo() {
 		logger.info("GET /saludo");
 		return saludoService.getSaludo(null);
 	}
 
 	@Get("/saludo/{name}")
-	public String getCustomSaludo(@Parameter String name) {
+	public SaludoDTO getCustomSaludo(@Parameter String name) {
 		logger.info("GET /saludo/{name}");
 		return saludoService.getSaludo(name);
 	}
@@ -44,8 +46,11 @@ public class SaludoController {
 	}
 	
 	@Get("/users")
-	public CompletableFuture<? extends Iterable<User>> getUsers() {
+	public CompletableFuture<Iterator<UserDTO>> getUsers() throws ExecutionException, InterruptedException {
 		logger.info("GET /users");
-		return saludoService.getUsers();
+		return CompletableFuture.completedFuture(
+				StreamSupport.stream(saludoService.getUsers().get().spliterator(), false)
+						.map(user -> new UserDTO(user.getNombre()))
+						.iterator());
 	}
 }
