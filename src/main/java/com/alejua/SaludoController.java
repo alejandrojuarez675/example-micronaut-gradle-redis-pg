@@ -3,10 +3,11 @@ package com.alejua;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
+import io.lettuce.core.RedisFuture;
+import io.reactivex.Flowable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,22 +36,20 @@ public class SaludoController {
 	}
 
 	@Get("/objetos")
-	public String getObjetos() {
+	public RedisFuture<String> getObjetos() {
 		logger.info("GET /objetos");
-		try {
-			return saludoService.getObjetos();
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-			return "Todo mal con redis";
-		}
+		return saludoService.getObjetos();
 	}
 	
 	@Get("/users")
 	public CompletableFuture<Iterator<UserDTO>> getUsers() throws ExecutionException, InterruptedException {
 		logger.info("GET /users");
-		return CompletableFuture.completedFuture(
-				StreamSupport.stream(saludoService.getUsers().get().spliterator(), false)
-						.map(user -> new UserDTO(user.getNombre()))
-						.iterator());
+		return saludoService.getUsers();
+	}
+
+	@Get("/users-rx")
+	public Flowable<UserDTO> getUsersRx() {
+		logger.info("GET /users-rx");
+		return saludoService.getUsersRx();
 	}
 }

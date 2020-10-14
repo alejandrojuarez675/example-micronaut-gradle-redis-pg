@@ -1,15 +1,17 @@
 package com.alejua;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
+import io.lettuce.core.RedisFuture;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.reactivex.Flowable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.lettuce.core.api.StatefulRedisConnection;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.StreamSupport;
 
 @Singleton
 public class SaludoService {
@@ -21,21 +23,33 @@ public class SaludoService {
 
 	@Inject
 	UserRepository userRepository;
-	
+
+	@Inject
+	UserRepositoryRx userRepositoryRx;
+
 	public SaludoDTO getSaludo(String name) {
 		logger.info("SaludoService::getSaludo");
 		if (name == null) name = "";
 		return new SaludoDTO("Hola " + name.toUpperCase());
 	}
 	
-	public String getObjetos() throws InterruptedException, ExecutionException {
+	public RedisFuture<String> getObjetos() {
 		logger.info("SaludoService::getObjetos");
-		return redisConnection.async().get("objetos").get();
+		return redisConnection.async().get("objetos");
 	}
 	
-	public CompletableFuture<? extends Iterable<User>> getUsers() {
+	public CompletableFuture<Iterator<UserDTO>> getUsers() throws ExecutionException, InterruptedException {
 		logger.info("SaludoService::getUsers");
-		return userRepository.findAll();
+		return CompletableFuture.completedFuture(
+				StreamSupport.stream(userRepository.findAll().get().spliterator(), false)
+						.map(user -> new UserDTO(user.getNombre()))
+						.iterator());
+	}
+
+	public Flowable<UserDTO> getUsersRx() {
+		logger.info("SaludoService::getUsersRx");
+		return userRepositoryRx.findAll()
+				.map(user -> new UserDTO(user.getNombre()));
 	}
 
 }
